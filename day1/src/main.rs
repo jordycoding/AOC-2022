@@ -20,7 +20,6 @@ fn part2(calories_list: &Vec<isize>) -> isize {
     list_clone.sort();
     let mut result = 0;
     for i in 1..4 {
-        println!("{}", i);
         result += list_clone[list_clone.len() - i];
     }
     result

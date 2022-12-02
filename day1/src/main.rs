@@ -10,9 +10,7 @@ fn main() {
 }
 
 fn part1(calories_list: &Vec<isize>) -> isize {
-    let mut list_clone = calories_list.clone();
-    list_clone.sort();
-    list_clone[calories_list.len() - 1]
+    *calories_list.iter().max().unwrap()
 }
 
 fn part2(calories_list: &Vec<isize>) -> isize {

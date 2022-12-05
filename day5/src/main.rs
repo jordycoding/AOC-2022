@@ -16,11 +16,17 @@ struct Input {
 
 fn main() {
     let mut now = Instant::now();
-    let input = read_input("./src/input.txt");
-    let elapsed = now.elapsed();
+    let input = read_input("./src/large_input.txt");
+    let mut elapsed = now.elapsed();
     println!("Parsing input took: {:.2?}", elapsed);
+    now = Instant::now();
     move_crates(&input, false);
+    elapsed = now.elapsed();
+    println!("Part 1 took: {:.2?}", elapsed);
+    now = Instant::now();
     move_crates(&input, true);
+    elapsed = now.elapsed();
+    println!("Part 1 took: {:.2?}", elapsed);
 }
 
 fn read_input(filename: &str) -> Input {
@@ -103,18 +109,12 @@ fn move_crates(input: &Input, keep_order: bool) {
         io::stdout().flush().unwrap();
         let to = crate_move.to - 1;
         let from = crate_move.from - 1;
-        let mut crates_to_move: Vec<char> = Vec::new();
-
-        for _ in 0..crate_move.amount {
-            let to_move = crates_clone[from].remove(0);
-            crates_to_move.push(to_move);
-        }
-        if keep_order {
+        let mut crates_to_move: Vec<char> = crates_clone[from].drain(..crate_move.amount).collect();
+        crates_clone[from].splice(..0, vec![]);
+        if !keep_order {
             crates_to_move.reverse();
         }
-        for crate_to_move in crates_to_move {
-            crates_clone[to].insert(0, crate_to_move);
-        }
+        crates_clone[to].splice(..0, crates_to_move);
     }
     println!("");
     let mut answer = "".to_owned();

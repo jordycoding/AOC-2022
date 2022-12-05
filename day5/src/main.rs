@@ -15,7 +15,8 @@ struct Input {
 
 fn main() {
     let input = read_input("./src/input.txt");
-    part1(&input);
+    move_crates(&input, false);
+    move_crates(&input, true);
 }
 
 fn read_input(filename: &str) -> Input {
@@ -101,14 +102,22 @@ fn read_input(filename: &str) -> Input {
     }
 }
 
-fn part1(input: &Input) {
+fn move_crates(input: &Input, keep_order: bool) {
     let mut crates_clone = input.crates.clone();
     for crate_move in &input.moves {
+        let to = crate_move.to - 1;
+        let from = crate_move.from - 1;
+        let mut crates_to_move: Vec<char> = Vec::new();
+
         for _ in 0..crate_move.amount {
-            let to = crate_move.to - 1;
-            let from = crate_move.from - 1;
             let to_move = crates_clone[from].remove(0);
-            crates_clone[to].insert(0, to_move);
+            crates_to_move.push(to_move);
+        }
+        if keep_order {
+            crates_to_move.reverse();
+        }
+        for crate_to_move in crates_to_move {
+            crates_clone[to].insert(0, crate_to_move);
         }
     }
     let mut answer = "".to_owned();

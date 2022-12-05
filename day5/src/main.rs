@@ -1,4 +1,5 @@
-use std::{fs, str::FromStr, time::Instant};
+use std::{fs, io, str::FromStr, time::Instant};
+use std::io::Write;
 
 #[derive(Debug)]
 struct Move {
@@ -95,7 +96,11 @@ fn read_input(filename: &str) -> Input {
 
 fn move_crates(input: &Input, keep_order: bool) {
     let mut crates_clone = input.crates.clone();
+    let mut counter = 0;
     for crate_move in &input.moves {
+        counter+=1;
+        print!("\rOn move {} of {}", counter, input.moves.len());
+        io::stdout().flush().unwrap();
         let to = crate_move.to - 1;
         let from = crate_move.from - 1;
         let mut crates_to_move: Vec<char> = Vec::new();
@@ -111,6 +116,7 @@ fn move_crates(input: &Input, keep_order: bool) {
             crates_clone[to].insert(0, crate_to_move);
         }
     }
+    println!("");
     let mut answer = "".to_owned();
     crates_clone
         .iter()

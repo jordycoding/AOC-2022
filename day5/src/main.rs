@@ -32,7 +32,6 @@ fn read_input(filename: &str) -> Input {
         .map(|line| line.to_string())
         .collect();
 
-    // println!("{:?}", parse_input);
     let alphabet: Vec<char> = ('A'..='Z').into_iter().collect::<Vec<char>>();
 
     let mut storage_width = 0;

@@ -1,4 +1,4 @@
-use std::{fs, str::FromStr};
+use std::{fs, str::FromStr, time::Instant};
 
 #[derive(Debug)]
 struct Move {
@@ -14,7 +14,10 @@ struct Input {
 }
 
 fn main() {
+    let mut now = Instant::now();
     let input = read_input("./src/input.txt");
+    let elapsed = now.elapsed();
+    println!("Parsing input took: {:.2?}", elapsed);
     move_crates(&input, false);
     move_crates(&input, true);
 }
@@ -73,20 +76,9 @@ fn read_input(filename: &str) -> Input {
                 .parse::<usize>()
                 .unwrap();
             let second_part = second.split_once(" ").unwrap().1;
-            let from_int = second_part
-                .split_once("to")
-                .unwrap()
-                .0
-                .trim()
-                .parse::<usize>()
-                .unwrap();
-            let to_int = second_part
-                .split_once("to")
-                .unwrap()
-                .1
-                .trim()
-                .parse::<usize>()
-                .unwrap();
+            let parts = second_part.split("to").collect::<Vec<_>>();
+            let from_int = parts[0].trim().parse::<usize>().unwrap();
+            let to_int = parts[1].trim().parse::<usize>().unwrap();
             Move {
                 amount: amount_int,
                 from: from_int,

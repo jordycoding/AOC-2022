@@ -19,7 +19,7 @@ struct Input {
 
 fn main() {
     let m = MultiProgress::new();
-    let sty = ProgressStyle::with_template("[{elapsed_precise}] {bar:40.cyan/blue} {msg}")
+    let sty = ProgressStyle::with_template("[{elapsed_precise}] {bar:40.cyan/blue} {msg} ({eta})")
         .unwrap()
         .progress_chars("##-");
 
@@ -38,13 +38,6 @@ fn main() {
 
     let _ = thread1.join();
     let _ = thread2.join();
-    // move_crates(&input, false);
-    // elapsed = now.elapsed();
-    // println!("Part 1 took: {:.2?}", elapsed);
-    // now = Instant::now();
-    // move_crates(&input, true);
-    // elapsed = now.elapsed();
-    // println!("Part 1 took: {:.2?}", elapsed);
 }
 
 fn read_input(filename: &str) -> Input {
@@ -138,6 +131,10 @@ fn move_crates(
         let from = crate_move.from - 1;
         let mut crates_to_move: Vec<char> = crates_clone[from].drain(..crate_move.amount).collect();
         crates_clone[from].splice(..0, vec![]);
+        // let mut crates_to_move: Vec<char> = crates_clone[from].split_off(crate_move.amount - 1);
+        // let length = crates_clone[from].len();
+        // println!("{} {}", length, crate_move.amount);
+        // crates_clone[from].truncate(length - crate_move.amount);
         if !keep_order {
             crates_to_move.reverse();
         }

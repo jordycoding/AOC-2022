@@ -1,32 +1,50 @@
-use std::{fs, io, str::FromStr, time::Instant};
 use std::io::Write;
+use std::thread;
+use std::{fs, io, time::Instant};
 
-#[derive(Debug)]
+use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
+
+#[derive(Debug, Clone)]
 struct Move {
     amount: usize,
     from: usize,
     to: usize,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Input {
     crates: Vec<Vec<char>>,
     moves: Vec<Move>,
 }
 
 fn main() {
+    let m = MultiProgress::new();
+    let sty = ProgressStyle::with_template("[{elapsed_precise}] {bar:40.cyan/blue} {msg}")
+        .unwrap()
+        .progress_chars("##-");
+
     let mut now = Instant::now();
     let input = read_input("./src/large_input.txt");
+    let input_clone = input.clone();
     let mut elapsed = now.elapsed();
     println!("Parsing input took: {:.2?}", elapsed);
     now = Instant::now();
-    move_crates(&input, false);
-    elapsed = now.elapsed();
-    println!("Part 1 took: {:.2?}", elapsed);
-    now = Instant::now();
-    move_crates(&input, true);
-    elapsed = now.elapsed();
-    println!("Part 1 took: {:.2?}", elapsed);
+
+    let m_clone = m.clone();
+    let sty_clone = sty.clone();
+
+    let thread1 = thread::spawn(move || move_crates(&input, false, &m, sty));
+    let thread2 = thread::spawn(move || move_crates(&input_clone, true, &m_clone, sty_clone));
+
+    let _ = thread1.join();
+    let _ = thread2.join();
+    // move_crates(&input, false);
+    // elapsed = now.elapsed();
+    // println!("Part 1 took: {:.2?}", elapsed);
+    // now = Instant::now();
+    // move_crates(&input, true);
+    // elapsed = now.elapsed();
+    // println!("Part 1 took: {:.2?}", elapsed);
 }
 
 fn read_input(filename: &str) -> Input {
@@ -100,13 +118,22 @@ fn read_input(filename: &str) -> Input {
     }
 }
 
-fn move_crates(input: &Input, keep_order: bool) {
+fn move_crates(
+    input: &Input,
+    keep_order: bool,
+    multi_progress: &MultiProgress,
+    progress_style: ProgressStyle,
+) {
     let mut crates_clone = input.crates.clone();
     let mut counter = 0;
+    let mut now = Instant::now();
+
+    let pb = multi_progress.add(ProgressBar::new(input.moves.len() as u64));
+    pb.set_style(progress_style);
     for crate_move in &input.moves {
-        counter+=1;
-        print!("\rOn move {} of {}", counter, input.moves.len());
-        io::stdout().flush().unwrap();
+        counter += 1;
+        pb.inc(1);
+        pb.set_message(format!("Move {}/{}", counter, input.moves.len()));
         let to = crate_move.to - 1;
         let from = crate_move.from - 1;
         let mut crates_to_move: Vec<char> = crates_clone[from].drain(..crate_move.amount).collect();
@@ -116,10 +143,14 @@ fn move_crates(input: &Input, keep_order: bool) {
         }
         crates_clone[to].splice(..0, crates_to_move);
     }
-    println!("");
     let mut answer = "".to_owned();
     crates_clone
         .iter()
         .for_each(|column| answer.push(column[0]));
-    println!("{}", answer);
+    let elapsed = now.elapsed();
+    let format_finish_message = format!(
+        "Finished in {:.2?} with result {} and keep order set to {}",
+        elapsed, answer, keep_order
+    );
+    pb.finish_with_message(format_finish_message);
 }

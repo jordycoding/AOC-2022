@@ -11,7 +11,7 @@ struct Dir {
 }
 
 fn main() {
-    let input = read_input("./src/input.test");
+    let input = read_input("./src/jona.test");
     // println!("{:?}", input);
     let mut parent_dirs: HashSet<String> = HashSet::new();
     input.iter().for_each(|dir| {
@@ -62,7 +62,10 @@ fn read_input(filename: &str) -> Vec<Dir> {
                     } else if &cap[1] == ".." {
                         if all_dirs_regex.is_match(&current_dir) {
                             let child_cap = all_dirs_regex.find_iter(&current_dir).last().unwrap();
-                            current_dir = current_dir.replace(child_cap.as_str(), "");
+                            let own_len = current_dir.len();
+                            let child_len = child_cap.as_str().len();
+                            current_dir.truncate(child_len - 1);
+                            // current_dir = current_dir.replace(child_cap.as_str(), "");
                         }
                     } else {
                         return;
@@ -97,18 +100,21 @@ fn push_current_dir_size(current_dir: &str, current_size: &mut usize, dirs: &mut
         let child_cap = all_dirs_regex.find_iter(&current_dir).last().unwrap();
         let cap_count = all_dirs_regex.find_iter(&current_dir).count();
         if cap_count > 1 {
-            dirs.push(Dir {
-                abs_path: cap_clone,
-                name: child_cap.as_str().replace("/", ""),
-                file_sizes: *current_size,
-                parent_dir: parent_cap.as_str().replace(child_cap.as_str(), ""),
-            });
+            if !dirs.iter().any(|dir| dir.abs_path == current_dir) {
+                dirs.push(Dir {
+                    abs_path: cap_clone,
+                    name: child_cap.as_str().replace("/", ""),
+                    file_sizes: *current_size,
+                    parent_dir: parent_cap.as_str().replace(child_cap.as_str(), ""),
+                });
+            }
+
             *current_size = 0;
         }
         if cap_count == 1 {
             if !(*current_size == 0) {
                 let name = parent_cap.as_str().replace("/", "");
-                if !dirs.iter().any(|dir| dir.name == name) {
+                if !dirs.iter().any(|dir| dir.abs_path == current_dir) {
                     dirs.push(Dir {
                         abs_path: parent_cap,
                         name,

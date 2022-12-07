@@ -1,4 +1,4 @@
-use std::{fs, thread::current};
+use std::{collections::HashSet, fs, thread::current};
 
 use regex::Regex;
 
@@ -11,14 +11,19 @@ struct Dir {
 }
 
 fn main() {
-    let input = read_input("./src/jona.test");
+    let input = read_input("./src/input.test");
     // println!("{:?}", input);
+    let mut parent_dirs: HashSet<String> = HashSet::new();
+    input.iter().for_each(|dir| {
+        parent_dirs.insert(String::from(&dir.abs_path));
+    });
+    println!("{} {}", parent_dirs.len(), input.len());
     part1(&input);
 }
 fn part1(input: &Vec<Dir>) {
     // println!("{}", input.len());
     let input_clone = input.clone();
-    let sizes: Vec<(&String, usize)> = input_clone
+    let mut sizes: Vec<(&String, usize)> = input_clone
         .iter()
         .map(|dir| {
             let size = get_dir_size(&input_clone, &dir.abs_path);
@@ -122,15 +127,16 @@ fn get_dir_size(input: &[Dir], path: &str) -> usize {
     // if size == 0 {
     //     println!("initial call");
     // }
+    if path == "/" {
+        println!("Root dir");
+    }
     for (index, possible_child) in input.iter().enumerate() {
         if possible_child.abs_path == path {
-            println!("Found it!");
             // size += possible_child.file_sizes;
             return possible_child.file_sizes
                 + get_dir_size(&input[index + 1..], &possible_child.abs_path);
         }
         if possible_child.parent_dir == path {
-            println!("Found a child");
             // size += get_dir_size(&input[index..], &possible_child.name);
             return possible_child.file_sizes
                 + get_dir_size(&input[index + 1..], &possible_child.abs_path);

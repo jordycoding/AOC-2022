@@ -1,0 +1,13 @@
+Semi stolen from medium article
+
+Make a new tree without any parent, the root tree.
+Set it as the current TreeNode and keep track of the current Node
+- Every time cd changes directories you create a new TreeNode
+  - You set the parent of this node to the current node
+  - Then you set this node as the current node
+- cd .. simply sets the current node to the parent of the current node(so it goes up one spot in the tree)
+Every line that is not a command is output of ls in this case
+So for every line that is not a command you match it to a size regex(something like (\d+).*))
+Every time this matches you add it to a sum you keep track of outside of the loop
+When the command cd changes directories you set the size of the current node to the one kept track of in size
+Because ls is called in every directory this will populate all nodes with a size

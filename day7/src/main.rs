@@ -47,10 +47,15 @@ impl TreeNode {
 fn main() {
     // let input = read_input("./src/jona.test");
     let root_node = read_input("./src/input.prod");
+    let required_space = 30000000 - (70000000 - Rc::clone(&root_node).borrow().get_size());
 
-    let output_part1 = part1(root_node);
+    let output_part1 = part1(Rc::clone(&root_node));
     println!("Part 1: {}", output_part1);
-    // println!("Total size: {}", total);
+    let mut output_part2 = part2(root_node, required_space);
+    output_part2.sort();
+    println!("Output part 2: {:?}", output_part2);
+    let result_part2 = output_part2.iter().map(|val| val).min();
+    println!("Part 2: {:?}", result_part2);
 }
 
 fn read_input(filename: &str) -> Rc<RefCell<TreeNode>> {
@@ -69,7 +74,6 @@ fn read_input(filename: &str) -> Rc<RefCell<TreeNode>> {
                     let cap = cd_regex.captures(line).unwrap();
                     if !(&cap[1] == ".." || &cap[1] == "/") {
                         let child = Rc::new(RefCell::new(TreeNode::new(&cap[1])));
-                        println!("Creating new child: {}", &cap[1]);
                         current.borrow_mut().add_child(Rc::clone(&child));
                         {
                             let mut mut_child = child.borrow_mut();
@@ -105,14 +109,26 @@ fn part1(root_node: Rc<RefCell<TreeNode>>) -> usize {
         size += root.get_size();
     }
     for child in root.children.iter() {
-        println!(
-            "Found child: {} with size: {}",
-            child.borrow().name,
-            child.borrow().get_size()
-        );
+        // println!(
+        //     "Found child: {} with size: {}",
+        //     child.borrow().name,
+        //     child.borrow().get_size()
+        // );
         size += part1(Rc::clone(&child));
     }
     size
+}
+
+fn part2(root_node: Rc<RefCell<TreeNode>>, required_space: usize) -> Vec<usize> {
+    let root = root_node.borrow();
+    let mut to_remove = Vec::new();
+    if root.get_size() >= required_space {
+        to_remove.push(root.get_size());
+        for child in root.children.iter() {
+            to_remove.append(&mut part2(Rc::clone(&child), required_space));
+        }
+    }
+    to_remove
 }
 
 fn total_size(root_node: Rc<RefCell<TreeNode>>) -> usize {
